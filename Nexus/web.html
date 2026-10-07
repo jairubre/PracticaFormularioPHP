@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Buscador Nexus Pulse</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<main>
+    <h1>Nexus <span>Pulse</span></h1>
+    <p class="intro">Busca en el historial, la tienda y el buscador de partidas. Puedes escribir la palabra completa o solo una parte.</p>
+
+    <!-- El formulario envía los datos a buscar.php mediante el método POST -->
+    <form action="buscar.php" method="post">
+
+        <!-- BLOQUE 1: búsqueda simple por una clave o por el contenido -->
+        <fieldset>
+            <legend>Búsqueda simple</legend>
+            <p class="ayuda">Elige dónde buscar y escribe el texto.</p>
+
+            <div class="opciones">
+                <label><input type="radio" name="tipo" value="seccion" checked> Sección (1.ª clave)</label>
+                <label><input type="radio" name="tipo" value="modo"> Tipo (2.ª clave)</label>
+                <label><input type="radio" name="tipo" value="elemento"> Elemento (3.ª clave)</label>
+                <label><input type="radio" name="tipo" value="contenido"> Contenido</label>
+            </div>
+
+            <label class="campo" for="cadena">Texto a buscar</label>
+            <input type="text" id="cadena" name="cadena" placeholder="Ej.: tienda, ranked, item2, Kael, neón">
+        </fieldset>
+
+        <!-- BLOQUE 2: búsqueda por combinación de claves -->
+        <fieldset>
+            <legend>Búsqueda por combinación de claves</legend>
+            <div class="opciones">
+                <label><input type="radio" name="tipo" value="combinacion"> Usar combinación</label>
+            </div>
+            <p class="ayuda">Rellena las claves que quieras. Las que dejes vacías valen cualquier cosa.</p>
+
+            <div class="trio">
+                <div>
+                    <label class="campo" for="clave1">1.ª clave</label>
+                    <input type="text" id="clave1" name="clave1" placeholder="Ej.: tienda">
+                </div>
+                <div>
+                    <label class="campo" for="clave2">2.ª clave</label>
+                    <input type="text" id="clave2" name="clave2" placeholder="Ej.: skins">
+                </div>
+                <div>
+                    <label class="campo" for="clave3">3.ª clave</label>
+                    <input type="text" id="clave3" name="clave3" placeholder="Ej.: item2">
+                </div>
+            </div>
+        </fieldset>
+
+        <button type="submit">Buscar</button>
+    </form>
+</main>
+</body>
+</html>
