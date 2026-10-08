@@ -9,47 +9,73 @@
 <body>
 <main>
     <h1>Nexus <span>Pulse</span></h1>
-    <p class="intro">Busca en el historial, la tienda y el buscador de partidas. Puedes escribir la palabra completa o solo una parte.</p>
+    <p class="intro">Filtra el historial de partidas escribiendo en uno o varios campos. Puedes poner la palabra completa o solo una parte.</p>
 
     <!-- El formulario envía los datos a buscar.php mediante el método POST -->
-    <form action="buscar.php" method="post">
+    <form action="./buscar.php" method="post">
 
-        <!-- BLOQUE 1: búsqueda simple por una clave o por el contenido -->
         <fieldset>
-            <legend>Búsqueda simple</legend>
-            <p class="ayuda">Elige dónde buscar y escribe el texto.</p>
+            <legend>Filtros de búsqueda</legend>
+            <p class="ayuda">Rellena un campo para buscar por una sola clave, o varios a la vez para combinarlos. Los campos vacíos no filtran. Al pulsar en un campo verás los valores disponibles.</p>
 
-            <div class="opciones">
-                <label><input type="radio" name="tipo" value="seccion" checked> Sección (1.ª clave)</label>
-                <label><input type="radio" name="tipo" value="modo"> Tipo (2.ª clave)</label>
-                <label><input type="radio" name="tipo" value="elemento"> Elemento (3.ª clave)</label>
-                <label><input type="radio" name="tipo" value="contenido"> Contenido</label>
-            </div>
+            <div class="cuadricula">
+                <!-- Cada campo es de texto: el usuario puede escribir la palabra completa
+                     o solo una parte (subcadena). El atributo list lo conecta con un
+                     <datalist> que le sugiere los valores que existen en el array. -->
 
-            <label class="campo" for="cadena">Texto a buscar</label>
-            <input type="text" id="cadena" name="cadena" placeholder="Ej.: tienda, ranked, item2, Kael, neón">
-        </fieldset>
-
-        <!-- BLOQUE 2: búsqueda por combinación de claves -->
-        <fieldset>
-            <legend>Búsqueda por combinación de claves</legend>
-            <div class="opciones">
-                <label><input type="radio" name="tipo" value="combinacion"> Usar combinación</label>
-            </div>
-            <p class="ayuda">Rellena las claves que quieras. Las que dejes vacías valen cualquier cosa.</p>
-
-            <div class="trio">
+                <!-- 1.ª clave del array: modo de juego -->
                 <div>
-                    <label class="campo" for="clave1">1.ª clave</label>
-                    <input type="text" id="clave1" name="clave1" placeholder="Ej.: tienda">
+                    <label class="campo" for="clave1">1.ª clave · Modo de juego</label>
+                    <input type="text" id="clave1" name="clave1" list="lista-clave1" autocomplete="off" placeholder="Ej.: ranked o rank">
+                    <datalist id="lista-clave1">
+                        <option value="ranked">
+                        <option value="normal">
+                        <option value="aram">
+                    </datalist>
                 </div>
+
+                <!-- 2.ª clave del array: partida -->
                 <div>
-                    <label class="campo" for="clave2">2.ª clave</label>
-                    <input type="text" id="clave2" name="clave2" placeholder="Ej.: skins">
+                    <label class="campo" for="clave2">2.ª clave · Partida</label>
+                    <input type="text" id="clave2" name="clave2" list="lista-clave2" autocomplete="off" placeholder="Ej.: partida1 o da1">
+                    <datalist id="lista-clave2">
+                        <option value="partida1">
+                        <option value="partida2">
+                    </datalist>
                 </div>
+
+                <!-- 3.ª clave del array: estadística -->
                 <div>
-                    <label class="campo" for="clave3">3.ª clave</label>
-                    <input type="text" id="clave3" name="clave3" placeholder="Ej.: item2">
+                    <label class="campo" for="clave3">3.ª clave · Estadística</label>
+                    <input type="text" id="clave3" name="clave3" list="lista-clave3" autocomplete="off" placeholder="Ej.: Bajas o baj">
+                    <datalist id="lista-clave3">
+                        <option value="Daño">
+                        <option value="Bajas">
+                        <option value="muertes">
+                    </datalist>
+                </div>
+
+                <!-- Contenido del array: valor de la estadística -->
+                <div>
+                    <label class="campo" for="contenido">Contenido · Valor</label>
+                    <input type="text" id="contenido" name="contenido" list="lista-contenido" autocomplete="off" placeholder="Ej.: 15000 o 150">
+                    <datalist id="lista-contenido">
+                        <option value="2">
+                        <option value="3">
+                        <option value="5">
+                        <option value="7">
+                        <option value="8">
+                        <option value="9">
+                        <option value="10">
+                        <option value="13">
+                        <option value="20">
+                        <option value="25">
+                        <option value="1000">
+                        <option value="5000">
+                        <option value="13000">
+                        <option value="15000">
+                        <option value="30000">
+                    </datalist>
                 </div>
             </div>
         </fieldset>

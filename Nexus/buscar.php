@@ -1,41 +1,36 @@
 <?php
 /*
  * buscar.php
- * Recoge los datos del formulario (index.html) mediante $_POST,
- * busca la cadena o subcadena en el array $nexus y muestra los resultados.
+ * Recoge los filtros del formulario (web.html) mediante $_POST,
+ * recorre el array tridimensional $nexus y muestra las entradas que cumplen
+ * todos los filtros elegidos.
  */
 
 /* ---------- 0. ARRAY TRIDIMENSIONAL ASOCIATIVO ---------- */
 /*
- * Estructura: $nexus[sección][tipo][elemento] = "contenido"
- *   - historial -> partidas jugadas (módulo Pulse Matcher)
- *   - tienda    -> catálogo de productos (módulo Pulse Store)
- *   - buscador  -> personajes disponibles en el matchmaking (módulo Pulse Matcher)
+ * Historial de partidas de Nexus Pulse (módulo Pulse Matcher).
+ * Estructura: $nexus[modo de juego][partida][estadística] = "valor"
  */
+$historial_partidas["ranked"]["partida1"]["Daño"] = "15000";
+$historial_partidas["ranked"]["partida1"]["Bajas"] = "10";
+$historial_partidas["ranked"]["partida1"]["muertes"] = "5";
+$historial_partidas["ranked"]["partida2"]["Daño"] = "1000";
+$historial_partidas["ranked"]["partida2"]["Bajas"] = "3";
+$historial_partidas["ranked"]["partida2"]["muertes"] = "25";
 
-// ===== HISTORIAL: partidas jugadas por tipo de partida =====
-$nexus["historial"]["ranked"]["partida1"] = "Victoria 5v5 - 32 min - MMR +24";
-$nexus["historial"]["ranked"]["partida2"] = "Derrota 5v5 - 28 min - MMR -18";
-$nexus["historial"]["ranked"]["partida3"] = "Victoria 5v5 - 41 min - MMR +21";
-$nexus["historial"]["normal"]["partida1"] = "Victoria 5v5 - 25 min";
-$nexus["historial"]["normal"]["partida2"] = "Derrota 5v5 - 35 min";
-$nexus["historial"]["aram"]["partida1"] = "Victoria 5v5 - 18 min - Personajes aleatorios";
+$historial_partidas["normal"]["partida1"]["Daño"] = "30000";
+$historial_partidas["normal"]["partida1"]["Bajas"] = "20";
+$historial_partidas["normal"]["partida1"]["muertes"] = "5";
+$historial_partidas["normal"]["partida2"]["Daño"] = "15000";
+$historial_partidas["normal"]["partida2"]["Bajas"] = "9";
+$historial_partidas["normal"]["partida2"]["muertes"] = "3";
 
-// ===== TIENDA: productos del catálogo =====
-$nexus["tienda"]["skins"]["item1"] = "Cyber Ronin - 1350 Pulse Orbs";
-$nexus["tienda"]["skins"]["item2"] = "Guardián Neón - 1820 Pulse Orbs";
-$nexus["tienda"]["skins"]["item3"] = "Dragón de Escarcha - 975 Pulse Orbs";
-$nexus["tienda"]["cromas"]["item1"] = "Croma Neón Rojo - 290 Pulse Orbs";
-$nexus["tienda"]["cromas"]["item2"] = "Croma Oro - 290 Pulse Orbs";
-$nexus["tienda"]["pase_batalla"]["item1"] = "Pase Temporada 1 - 950 Pulse Orbs";
-
-// ===== BUSCADOR: personajes disponibles por tipo de partida =====
-$nexus["buscador"]["ranked"]["personaje1"] = "Kael - Asesino - Pick & Ban";
-$nexus["buscador"]["ranked"]["personaje2"] = "Lyra - Maga - Pick & Ban";
-$nexus["buscador"]["ranked"]["personaje3"] = "Torvak - Tanque - Pick & Ban";
-$nexus["buscador"]["normal"]["personaje1"] = "Kael - Asesino - Selección libre";
-$nexus["buscador"]["normal"]["personaje2"] = "Sylas - Soporte - Selección libre";
-$nexus["buscador"]["aram"]["personaje1"] = "Personaje aleatorio - Cualquier rol";
+$historial_partidas["aram"]["partida1"]["Daño"] = "5000";
+$historial_partidas["aram"]["partida1"]["Bajas"] = "13";
+$historial_partidas["aram"]["partida1"]["muertes"] = "2";
+$historial_partidas["aram"]["partida2"]["Daño"] = "13000";
+$historial_partidas["aram"]["partida2"]["Bajas"] = "7";
+$historial_partidas["aram"]["partida2"]["muertes"] = "8";
 
 // Array donde se guardarán los resultados encontrados
 $resultados = array();
@@ -43,167 +38,150 @@ $resultados = array();
 // Mensaje de error (vacío si todo va bien)
 $error = "";
 
-// Tipos de búsqueda permitidos (sirve para validar lo que llega del formulario)
-$tiposValidos = array("seccion", "modo", "elemento", "contenido", "combinacion");
-
-// Nombres legibles de cada tipo de búsqueda, para mostrarlos en pantalla
-$nombresTipo = array(
-    "seccion"     => "la sección (1.ª clave)",
-    "modo"        => "el tipo (2.ª clave)",
-    "elemento"    => "el elemento (3.ª clave)",
-    "contenido"   => "el contenido",
-    "combinacion" => "la combinación de claves"
-);
-
 /* ---------- 1. RECOGER LOS DATOS DEL FORMULARIO CON $_POST ---------- */
 
 // isset() comprueba que la variable existe; si no, se asigna una cadena vacía.
 // trim() elimina los espacios en blanco del principio y del final.
-$tipo   = isset($_POST["tipo"])   ? trim($_POST["tipo"])   : "";
-$cadena = isset($_POST["cadena"]) ? trim($_POST["cadena"]) : "";
-$clave1 = isset($_POST["clave1"]) ? trim($_POST["clave1"]) : "";
-$clave2 = isset($_POST["clave2"]) ? trim($_POST["clave2"]) : "";
-$clave3 = isset($_POST["clave3"]) ? trim($_POST["clave3"]) : "";
+// Una cadena vacía significa que el usuario dejó ese campo sin rellenar.
+$clave1    = $_POST["clave1"]    ? trim($_POST["clave1"])    : "";
+$clave2    = $_POST["clave2"]    ? trim($_POST["clave2"])    : "";
+$clave3    = $_POST["clave3"]    ? trim($_POST["clave3"])    : "";
+$contenido = $_POST["contenido"] ? trim($_POST["contenido"]) : "";
 
 /* ---------- 2. VALIDAR LOS DATOS (estructuras alternativas) ---------- */
 
-// in_array() comprueba si el tipo recibido está entre los permitidos
-if (!in_array($tipo, $tiposValidos)) {
-    $error = "Elige un tipo de búsqueda en el formulario.";
-} elseif ($tipo == "combinacion") {
-    // En la combinación hay que rellenar al menos una de las tres claves
-    if ($clave1 == "" && $clave2 == "" && $clave3 == "") {
-        $error = "Para buscar por combinación, rellena al menos una de las tres claves.";
-    }
-} elseif ($cadena == "") {
-    // En el resto de búsquedas el texto es obligatorio
-    $error = "Escribe un texto para buscar.";
+// Hay que rellenar al menos un campo; si no, no se busca nada
+if ($clave1 == "" && $clave2 == "" && $clave3 == "" && $contenido == "") {
+    $error = "Escribe al menos un filtro en el formulario.";
 }
 
-/* ---------- 3. BUSCAR EN EL ARRAY (bucles) ---------- */
+/* ---------- 3. FILTRAR EL ARRAY (bucles) ---------- */
 
-/*
- * stripos($pajar, $aguja) busca $aguja dentro de $pajar sin distinguir
+
+/* stripos($pajar, $aguja) busca $aguja dentro de $pajar sin distinguir
  * mayúsculas de minúsculas. Devuelve la posición donde la encuentra
- * o false si no la encuentra.
+ * o false si no la encuentra. Así se pueden buscar cadenas y subcadenas.
  * IMPORTANTE: se compara con !== false porque si la coincidencia está
  * al principio, stripos devuelve 0, y 0 == false sería verdadero.
+ *
+ * Cada campo vacío cuenta como coincidencia; los campos rellenos
+ * tienen que cumplirse todos a la vez.
  */
+
 if ($error == "") {
 
     // Recorremos las tres dimensiones del array con foreach anidados
-    foreach ($nexus as $seccion => $modos) {              // 1.ª clave
-        foreach ($modos as $modo => $elementos) {          // 2.ª clave
-            foreach ($elementos as $elemento => $contenido) { // 3.ª clave y contenido
+    foreach ($historial_partidas as $modo => $partidas) {
+        foreach ($partidas as $partida => $estadisticas) {
+            foreach ($estadisticas as $estadistica => $valor) {
 
-                $coincide = false;
+                $valida = true;   // de momento la fila vale
 
-                // Según el tipo elegido comparamos una cosa u otra
-                switch ($tipo) {
-                    case "seccion":
-                        $coincide = stripos($seccion, $cadena) !== false;
-                        break;
-
-                    case "modo":
-                        $coincide = stripos($modo, $cadena) !== false;
-                        break;
-
-                    case "elemento":
-                        $coincide = stripos($elemento, $cadena) !== false;
-                        break;
-
-                    case "contenido":
-                        $coincide = stripos($contenido, $cadena) !== false;
-                        break;
-
-                    case "combinacion":
-                        // Cada clave vacía cuenta como coincidencia;
-                        // las rellenas tienen que coincidir todas a la vez.
-                        $ok1 = ($clave1 == "") || stripos($seccion, $clave1) !== false;
-                        $ok2 = ($clave2 == "") || stripos($modo, $clave2) !== false;
-                        $ok3 = ($clave3 == "") || stripos($elemento, $clave3) !== false;
-                        $coincide = $ok1 && $ok2 && $ok3;
-                        break;
+                // Filtro 1: modo
+                if ($clave1 != "" && stripos($modo, $clave1) === false) {
+                    $valida = false;
                 }
 
-                // Si coincide, guardamos el resultado en el array $resultados
-                if ($coincide) {
-                    $resultados[] = array(
-                        "seccion"   => $seccion,
-                        "modo"      => $modo,
-                        "elemento"  => $elemento,
-                        "contenido" => $contenido
-                    );
+                // Filtro 2: partida
+                if ($clave2 != "" && stripos($partida, $clave2) === false) {
+                    $valida = false;
+                }
+
+                // Filtro 3: estadística
+                if ($clave3 != "" && stripos($estadistica, $clave3) === false) {
+                    $valida = false;
+                }
+
+                // Filtro 4: valor
+                if ($contenido != "" && stripos($valor, $contenido) === false) {
+                    $valida = false;
+                }
+
+                // Si ha pasado todos los filtros, la guardamos
+                if ($valida) {
+                    $resultados[] = [
+                        "modo"        => $modo,
+                        "partida"     => $partida,
+                        "estadistica" => $estadistica,
+                        "valor"       => $valor
+                    ];
                 }
             }
         }
     }
 }
 
-// Texto buscado, para mostrarlo en el resumen.
-// En la combinación unimos las claves rellenas con implode().
-if ($tipo == "combinacion") {
-    $buscado = array();
-    if ($clave1 != "") { $buscado[] = $clave1; }
-    if ($clave2 != "") { $buscado[] = $clave2; }
-    if ($clave3 != "") { $buscado[] = $clave3; }
-    $textoBuscado = implode(" + ", $buscado);
-} else {
-    $textoBuscado = $cadena;
+// Texto con los filtros elegidos, para mostrarlo en el resumen.
+// Se guardan en un array y se unen con implode().
+$filtros = array();
+if ($clave1 != "") {
+    $filtros[] = "1.ª clave = " . $clave1;
 }
+if ($clave2 != "") {
+    $filtros[] = "2.ª clave = " . $clave2;
+}
+if ($clave3 != "") {
+    $filtros[] = "3.ª clave = " . $clave3;
+}
+if ($contenido != "") {
+    $filtros[] = "contenido = " . $contenido;
+}
+$textoFiltros = implode(" · ", $filtros);
 
 // count() devuelve el número de resultados encontrados
 $total = count($resultados);
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Resultados - Buscador Nexus Pulse</title>
     <link rel="stylesheet" href="estilos.css">
 </head>
+
 <body>
-<main>
-    <h1>Nexus <span>Pulse</span></h1>
+    <main>
+        <h1>Nexus <span>Pulse</span></h1>
 
-<?php
-/* ---------- 4. MOSTRAR LOS RESULTADOS (sentencias de visualización) ---------- */
+        <?php
+        /* ---------- 4. MOSTRAR LOS RESULTADOS (sentencias de visualización) ---------- */
 
-// htmlspecialchars() convierte caracteres especiales (<, >, &, ") en entidades HTML
-// para que lo que escriba el usuario no se interprete como código.
+        // htmlspecialchars() convierte caracteres especiales (<, >, &, ") en entidades HTML
+        // para que lo que escribe el usuario no se interprete como código.
 
-if ($error != "") {
-    // Hay un error de validación
-    echo "<div class='aviso'>" . $error . "</div>";
+        if ($error != "") {
+            // No se ha rellenado ningún campo
+            echo "<div class='aviso'>" . $error . "</div>";
+        } elseif ($total == 0) {
+            // La combinación de filtros no existe en el array
+            echo "<p class='resumen'>Filtros: <strong>" . htmlspecialchars($textoFiltros) . "</strong></p>";
+            echo "<div class='aviso'>No hay ninguna entrada que cumpla todos estos filtros a la vez.</div>";
+        } else {
+            // Hay resultados: los mostramos en una tabla recorriendo el array con foreach
+            echo "<p class='resumen'>Filtros: <strong>" . htmlspecialchars($textoFiltros) . "</strong> · ";
+            echo "<strong>" . $total . "</strong> " . ($total == 1 ? "resultado" : "resultados") . "</p>";
 
-} elseif ($total == 0) {
-    // La búsqueda no ha encontrado nada
-    echo "<p class='resumen'>Has buscado <strong>" . htmlspecialchars($textoBuscado) . "</strong> en " . $nombresTipo[$tipo] . ".</p>";
-    echo "<div class='aviso'>No hay resultados. Prueba con otra palabra o con una parte más corta.</div>";
+            echo "<div class='tabla'><table>";
+            echo "<tr><th>1.ª clave · Modo</th><th>2.ª clave · Partida</th><th>3.ª clave · Estadística</th><th>Contenido · Valor</th></tr>";
 
-} else {
-    // Hay resultados: los mostramos en una tabla recorriendo el array con foreach
-    echo "<p class='resumen'>Has buscado <strong>" . htmlspecialchars($textoBuscado) . "</strong> en " . $nombresTipo[$tipo] . ": ";
-    echo "<strong>" . $total . "</strong> " . ($total == 1 ? "resultado" : "resultados") . ".</p>";
+            foreach ($resultados as $fila) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($fila["modo"]) . "</td>";
+                echo "<td>" . htmlspecialchars($fila["partida"]) . "</td>";
+                echo "<td>" . htmlspecialchars($fila["estadistica"]) . "</td>";
+                echo "<td>" . htmlspecialchars($fila["valor"]) . "</td>";
+                echo "</tr>";
+            }
 
-    echo "<div class='tabla'><table>";
-    echo "<tr><th>Sección</th><th>Tipo</th><th>Elemento</th><th>Contenido</th></tr>";
+            echo "</table></div>";
+        }
+        ?>
 
-    foreach ($resultados as $fila) {
-        echo "<tr>";
-        echo "<td>" . htmlspecialchars($fila["seccion"]) . "</td>";
-        echo "<td>" . htmlspecialchars($fila["modo"]) . "</td>";
-        echo "<td>" . htmlspecialchars($fila["elemento"]) . "</td>";
-        echo "<td>" . htmlspecialchars($fila["contenido"]) . "</td>";
-        echo "</tr>";
-    }
-
-    echo "</table></div>";
-}
-?>
-
-    <a class="boton" href="web.html">Nueva búsqueda</a>
-</main>
+        <a class="boton" href="web.html">Nueva búsqueda</a>
+    </main>
 </body>
+
 </html>

@@ -52,7 +52,8 @@ legend { padding: 0 .5rem; font-weight: 600; }
 
 label.campo { display: block; font-size: .9rem; color: var(--suave); margin-bottom: .3rem; }
 
-input[type="text"] {
+input[type="text"],
+select {
     width: 100%;
     padding: .65rem .8rem;
     border: 1px solid var(--borde);
@@ -64,12 +65,14 @@ input[type="text"] {
 }
 
 input[type="text"]:focus,
+select:focus,
 button:focus-visible,
 a:focus-visible {
     outline: 2px solid var(--pulso);
     outline-offset: 2px;
 }
 
+.cuadricula { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 1rem; }
 .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 .75rem; }
 
 button, .boton {
@@ -105,5 +108,5 @@ tr:last-child td { border-bottom: none; }
 }
 
 @media (max-width: 560px) {
-    .trio { grid-template-columns: 1fr; }
+    .trio, .cuadricula { grid-template-columns: 1fr; }
 }
