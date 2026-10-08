@@ -78,22 +78,22 @@ if ($error == "") {
                 $valida = true;   // de momento la fila vale
 
                 // Filtro 1: modo
-                if ($clave1 != "" && stripos($modo, $clave1) === false) {
+                if ($clave1 != "" && strtolower($modo) !== strtolower($clave1)) {
                     $valida = false;
                 }
 
                 // Filtro 2: partida
-                if ($clave2 != "" && stripos($partida, $clave2) === false) {
+                if ($clave2 != "" && strtolower($partida) !== strtolower($clave2)) {
                     $valida = false;
                 }
 
-                // Filtro 3: estadística
-                if ($clave3 != "" && stripos($estadistica, $clave3) === false) {
+                // Filtro 3: accion
+                if ($clave3 != "" && strtolower($estadistica) !== strtolower($clave3)) {
                     $valida = false;
                 }
 
                 // Filtro 4: valor
-                if ($contenido != "" && stripos($valor, $contenido) === false) {
+                if ($contenido != "" && strtolower($valor) !== strtolower($contenido)) {
                     $valida = false;
                 }
 
