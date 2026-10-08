@@ -75,30 +75,30 @@ if ($error == "") {
         foreach ($partidas as $partida => $estadisticas) {
             foreach ($estadisticas as $estadistica => $valor) {
 
-                $valida = true;   // de momento la fila vale
+                $rellenaArray = true;   // de momento la fila vale
 
                 // Filtro 1: modo
                 if ($clave1 != "" && strtolower($modo) !== strtolower($clave1)) {
-                    $valida = false;
+                    $rellenaArray = false;
                 }
 
                 // Filtro 2: partida
                 if ($clave2 != "" && strtolower($partida) !== strtolower($clave2)) {
-                    $valida = false;
+                    $rellenaArray = false;
                 }
 
                 // Filtro 3: accion
                 if ($clave3 != "" && strtolower($estadistica) !== strtolower($clave3)) {
-                    $valida = false;
+                    $rellenaArray = false;
                 }
 
                 // Filtro 4: valor
                 if ($contenido != "" && strtolower($valor) !== strtolower($contenido)) {
-                    $valida = false;
+                    $rellenaArray = false;
                 }
 
                 // Si ha pasado todos los filtros, la guardamos
-                if ($valida) {
+                if ($rellenaArray) {
                     $resultados[] = [
                         "modo"        => $modo,
                         "partida"     => $partida,
